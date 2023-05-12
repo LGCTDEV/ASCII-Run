@@ -1,0 +1,31 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #000;
+    color: #F80;
+  font-size: 16px;
+}
+
+.game-area {
+  font-family: monospace;
+  font-size: 16px;
+  line-height: 1;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.character {
+  color: Aqua;
+}
+
+.obstacle {
+  color: Silver;
+   
+}
+
+.game-over {
+  color: Purple;
+}
