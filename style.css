@@ -6,7 +6,7 @@ body {
     margin: 0;
     background-color: #000;
     color: #F80;
-  font-size: 16px;
+    font-size: 16px;
 }
 
 .game-area {
@@ -15,6 +15,11 @@ body {
   line-height: 1;
   white-space: pre;
   overflow: hidden;
+  border: solid 1px;
+}
+
+.game-control {
+  color: gold;
 }
 
 .character {
@@ -22,10 +27,27 @@ body {
 }
 
 .obstacle {
-  color: Silver;
+  color: burlywood;
    
 }
 
 .game-over {
   color: Purple;
 }
+
+.bonus {
+  color: red;
+}
+
+.score {
+  color: #F80;
+}
+
+.start {
+  color: gold;
+}
+
+.pickup {
+  color: #F5F;
+}
+
