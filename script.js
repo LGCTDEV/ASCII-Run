@@ -6,23 +6,27 @@ const START_OBSTACLE_POSITION = 80;
 const MAX_JUMP_HEIGHT = 5;
 const GRAVITY = 0.007;
 const character = '(O)';
+const jumpCharacter = '\\o/';
+
 
 const gameArea = document.getElementById('game-area');
 gameArea.focus();
 
-
-
-// Motifs d'obstacles possibles
-var obstaclePatterns = ['#', '**', '***', '****', '*****', '******', '*******', '*******']; 
+var obstaclePatterns = ['*', '**', '***', '****', '*****', '******', '*******', '*******']; 
 
 let player = {
   speed: 0,
-  position: 1,
+  position: 0,
   isJumping: false,
   jumpHeight: 0,
   jumpStartTime: 0,
   isGameOver: false, 
-  score: 0
+  canRestart: false,
+  gameOverCountdown: null,
+  gameOverCounter: 0,
+  isFirstGame: true,
+  score: 0,
+  level: 1
 };
 
 let obstacle = {
@@ -42,8 +46,13 @@ function draw() {
       if (
         i === GAME_HEIGHT - 1 - floorJumpHeight &&
         j === floorPlayerPosition) {
-        line += `<span class="character">${character}</span>`;
-        j += CHARACTER_LENGTH - 1;
+        if (player.isJumping) {
+          line += `<span class="character">${jumpCharacter}</span>`;
+          j += jumpCharacter.length - 1; 
+        } else {
+          line += `<span class="character">${character}</span>`;
+          j += CHARACTER_LENGTH - 1;
+        }
       } else if (
         i === GAME_HEIGHT - 1 &&
         j >= obstacle.position &&
@@ -58,11 +67,28 @@ function draw() {
   }
 
   lines += '_'.repeat(START_OBSTACLE_POSITION) + '\n'; 
-  lines = 'Score: ' + player.score + '\n' + lines; 
+  lines = 'Score: ' + player.score + ' Level: ' + player.level + '\n' + lines; 
   gameArea.innerHTML = lines; 
 
-  if (player.isGameOver) {
-    gameArea.innerHTML += '<span class="game-over">Game Over! Press Space to Restart!</span>'; 
+  if (player.isFirstGame && obstacle.position > 0 && player.isGameOver != true) {
+    gameArea.innerHTML = gameArea.innerHTML += '<span class="game-control">Controls : Press SPACEBAR to jump!</span>' ;
+  } else if (player.isGameOver) {
+    if (player.canRestart) {
+      gameArea.innerHTML += '<span class="game-over">Game Over! Press Space to Restart!</span>'; 
+    } else if (player.gameOverCountdown === null) {
+      player.gameOverCounter = 3;
+      player.gameOverCountdown = setInterval(() => {
+        player.gameOverCounter--;
+        if (player.gameOverCounter <= 0) {
+          clearInterval(player.gameOverCountdown);
+          player.gameOverCountdown = null;
+          player.canRestart = true;
+        }
+        draw();
+      }, 1000);
+    } else {
+      gameArea.innerHTML += `<span class="game-over">Game Over! Press Space to Restart in ${player.gameOverCounter}!</span>`;
+    }
   }
 }
 
@@ -80,42 +106,39 @@ function updateObstaclePosition() {
 
   if (obstacle.position <= 0 - obstaclePatterns[obstacle.patternIndex].length) {
     obstacle.position = START_OBSTACLE_POSITION; 
-    player.score += 10; // Incrémente le score du joueur
-    player.speed += 0.01; // Augmente la vitesse du joueur
-    obstacle.speed += 0.01; // Augmente la vitesse de l'obstacle
-    obstacle.patternIndex = Math.floor(Math.random() * obstaclePatterns.length); // Sélectionne un nouveau motif d'obstacle aléatoire
+    player.score += 10; 
+    player.speed += 0.01; 
+    obstacle.speed += 0.01; 
+    obstacle.patternIndex = Math.floor(Math.random() * obstaclePatterns.length); 
+
+    if (player.score % 100 === 0) {
+      player.level += 1; 
+      obstacle.speed += 0.01 * player.level; 
+    }
   }
 }
 
-
 function checkCollision() {
-  // Obstacle width (size)
   const obstacleWidth = obstaclePatterns[obstacle.patternIndex].length;
-
-  // Check if player is at, before or just after the obstacle
   const atObstacle = player.position >= obstacle.position && player.position < obstacle.position + obstacleWidth;
   const justAfterObstacle = player.position >= obstacle.position - CHARACTER_LENGTH && player.position < obstacle.position;
   const onObstacle = atObstacle || justAfterObstacle;
-  
-  // Obstacle height (all obstacles have a height of 1 for simplicity)
   const obstacleHeight = 1;
-  
-  // Check if player is above the obstacle
   const aboveObstacle = player.jumpHeight > obstacleHeight;
   
-  // If the player is on the obstacle and not above it, there is a collision
   if (onObstacle && !aboveObstacle) {
     return true;
   }
 
-  // Otherwise, there's no collision
   return false;
 }
-
 
 function handleJump(event) {
   if (event.code === 'Space' && event.type === 'keydown' && !player.isGameOver) {
     if (!player.isJumping) {
+      if (player.isFirstGame) {
+        player.isFirstGame = false;
+      }
       jump();
     }
   }
@@ -140,22 +163,28 @@ function updateJump() {
   }
 }
 
-
 function handleRestart(event) {
-  if (event.code === 'Space' && event.type === 'keydown' && player.isGameOver) {
+  if (event.code === 'Space' && event.type === 'keydown' && player.isGameOver && player.canRestart) {
     resetGame();
   }
 }
 
 function resetGame() {
-  player.position = 1;
+  player.position = 0;
   obstacle.position = START_OBSTACLE_POSITION;
   player.isJumping = false;
   player.jumpHeight = 0;
   player.isGameOver = false;
+  player.canRestart = false;
   player.score = 0;
+  player.level = 1;
   player.speed = 0;
   obstacle.speed = 0.25;
+  if (player.gameOverCountdown !== null) {
+    clearInterval(player.gameOverCountdown);
+    player.gameOverCountdown = null;
+    player.gameOverCounter = 0;
+  }
 }
 
 document.addEventListener('keydown', handleJump); 
@@ -169,8 +198,8 @@ function gameLoop() {
       player.isGameOver = true;
     }
     updateJump();
-    draw();
   }
+  draw();
   requestAnimationFrame(gameLoop);
 }
 
