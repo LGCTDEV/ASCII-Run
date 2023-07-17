@@ -5,7 +5,6 @@ const MAX_POSITION = 27;
 const START_OBSTACLE_POSITION = 80;
 const MAX_JUMP_HEIGHT = 5.5;
 const GRAVITY = 0.007;
-
 const characterRun1 = [
   '  O ',
   '/\\>',
@@ -13,7 +12,6 @@ const characterRun1 = [
   '>\\ ',
   '\' \\'
 ];
-
 const characterRun2 = [
   '  o ',
   '<|\\',
@@ -21,7 +19,6 @@ const characterRun2 = [
   ' >>',
   '/ \''
 ];
-
 const characterRun3 = [
   ' O  ',
   '<|>',
@@ -29,7 +26,6 @@ const characterRun3 = [
   '/ \\',
   '| |'
 ];
-
 const jumpCharacter = [
   ' \'O\'',
   '/|/',
@@ -37,14 +33,9 @@ const jumpCharacter = [
   '> >',
   '- -'
 ];
-
-
-const gameArea = document.getElementById('game-area');
-gameArea.focus();
+const characterRunFrames = [characterRun1, characterRun2, characterRun3];
 
 var obstaclePatterns = ['*', '**', '***', '****', '*****', '******', '*******', '*******'];
-
-const characterRunFrames = [characterRun1, characterRun2, characterRun3];
 
 let player = {
   speed: 0,
@@ -75,6 +66,9 @@ let obstacle = {
   patternIndex: 0,
   isBonus: false
 };
+
+const gameArea = document.getElementById('game-area');
+gameArea.focus();
 
 function draw() {
   const floorJumpHeight = Math.floor(player.jumpHeight);
