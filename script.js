@@ -3,15 +3,48 @@ const GAME_HEIGHT = 20;
 const CHARACTER_LENGTH = 3;
 const MAX_POSITION = 27;
 const START_OBSTACLE_POSITION = 80;
-const MAX_JUMP_HEIGHT = 5;
+const MAX_JUMP_HEIGHT = 5.5;
 const GRAVITY = 0.007;
-const character = '(O)';
-const jumpCharacter = '\\o/';
+
+const characterRun1 = [
+  '  O ',
+  '/\\>',
+  '\'| ',
+  '>\\ ',
+  '\' \\'
+];
+
+const characterRun2 = [
+  '  o ',
+  '<|\\',
+  ' /\'',
+  ' >>',
+  '/ \''
+];
+
+const characterRun3 = [
+  ' O  ',
+  '<|>',
+  '\'|\'',
+  '/ \\',
+  '| |'
+];
+
+const jumpCharacter = [
+  ' \'O\'',
+  '/|/',
+  ' ! ',
+  '> >',
+  '- -'
+];
+
 
 const gameArea = document.getElementById('game-area');
 gameArea.focus();
 
-var obstaclePatterns = ['*', '**', '***', '****', '*****', '******', '*******', '*******']; 
+var obstaclePatterns = ['*', '**', '***', '****', '*****', '******', '*******', '*******'];
+
+const characterRunFrames = [characterRun1, characterRun2, characterRun3];
 
 let player = {
   speed: 0,
@@ -31,7 +64,9 @@ let player = {
   topScore: localStorage.getItem('topScore') || 0,
   topLevel: localStorage.getItem('topLevel') || 1,
   startCountdown: null,
-  startCounter: 5
+  startCounter: 5,
+  animationState: 0,
+  animationCounter: 0
 };
 
 let obstacle = {
@@ -42,37 +77,44 @@ let obstacle = {
 };
 
 function draw() {
-  const floorJumpHeight = Math.floor(player.jumpHeight); 
-  const floorPlayerPosition = Math.floor(player.position); 
+  const floorJumpHeight = Math.floor(player.jumpHeight);
+  const floorPlayerPosition = Math.floor(player.position);
+
+  let characterToDraw;
+  if (player.isJumping) {
+    characterToDraw = jumpCharacter;
+  } else {
+    characterToDraw = characterRunFrames[player.animationState];
+  }
 
   let lines = '';
-  for (let i = 0; i < GAME_HEIGHT; i++) { 
+  for (let i = 0; i < GAME_HEIGHT; i++) {
     let line = '';
-    for (let j = 0; j < GAME_WIDTH; j++) { 
+    for (let j = 0; j < GAME_WIDTH; j++) {
       if (
-        i === GAME_HEIGHT - 1 - floorJumpHeight &&
-        j === floorPlayerPosition) {
-        if (player.isJumping) {
-          line += `<span class="character">${jumpCharacter}</span>`;
-          j += jumpCharacter.length - 1; 
-        } else {
-          line += `<span class="character">${character}</span>`;
-          j += CHARACTER_LENGTH - 1;
-        }
+        i >= GAME_HEIGHT - characterToDraw.length - floorJumpHeight &&
+        i < GAME_HEIGHT - floorJumpHeight &&
+        j === floorPlayerPosition
+      ) {
+        const characterRow = characterToDraw[i - (GAME_HEIGHT - characterToDraw.length - floorJumpHeight)];
+        line += `<span class="character">${characterRow}</span>`;
+        j += CHARACTER_LENGTH - 1;
       } else if (
         i === GAME_HEIGHT - 1 &&
         j >= obstacle.position &&
         j < obstacle.position + (obstacle.isBonus ? 1 : obstaclePatterns[obstacle.patternIndex].length)
       ) {
-        line += `<span class="obstacle${obstacle.isBonus ? ' bonus' : ''}">${obstacle.isBonus ? '@' : '+'}</span>`;
+        line += `<span class="obstacle${obstacle.isBonus ? ' bonus' : ''}">${
+          obstacle.isBonus ? '@' : '+'
+        }</span>`;
       } else {
         line += ' ';
       }
     }
-    lines += line + '\n'; 
+    lines += line + '\n';
   }
 
-  lines += '_'.repeat(START_OBSTACLE_POSITION) + '\n'; 
+  lines += '_'.repeat(START_OBSTACLE_POSITION) + '\n';
   lines = '<span class="score">Score: ' +
   player.score +
   ' Level: ' +
@@ -80,7 +122,7 @@ function draw() {
   ' '.repeat(GAME_WIDTH - player.score.toString().length - player.level.toString().length - player.topScore.toString().length - player.topLevel.toString().length - 38) + 
         'Top Score: ' + player.topScore +  ' Top Level: ' + player.topLevel + '</span>\n' + lines;
 
-  gameArea.innerHTML = lines; 
+  gameArea.innerHTML = lines;
 
   if (player.isFirstGame && obstacle.position > 0 && player.isGameOver != true) {
     if (player.startCountdown === null) {
@@ -101,7 +143,7 @@ function draw() {
     }
   } else if (player.isGameOver) {
     if (player.canRestart) {
-      gameArea.innerHTML += '<span class="game-over">Game Over! Press Space to Restart!</span>'; 
+      gameArea.innerHTML += '<span class="game-over">Game Over! Press Space to Restart!</span>';
     } else if (player.gameOverCountdown === null) {
       player.gameOverCounter = 3;
       player.gameOverCountdown = setInterval(() => {
@@ -118,6 +160,7 @@ function draw() {
     }
   }
 }
+
 
 function updatePlayerPosition() {
   player.position += player.speed; 
@@ -256,9 +299,16 @@ function gameLoop() {
       player.isGameOver = true;
     }
     updateJump();
+
+    if (player.animationCounter === 5) {
+      player.animationCounter = 0;
+      player.animationState = (player.animationState + 1) % 3; 
+    }
+    player.animationCounter++;
   }
   draw();
   requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
+
