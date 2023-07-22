@@ -1,3 +1,5 @@
+/* style.css */
+
 body {
     display: flex;
     justify-content: center;
@@ -15,10 +17,9 @@ body {
   line-height: 1;
   white-space: pre;
   overflow: hidden;
-  border: solid 1px;
 }
 
-.game-control {
+.game-control, .start {
   color: gold;
 }
 
@@ -27,7 +28,7 @@ body {
 }
 
 .obstacle {
-  color: burlywood;
+  color: Chartreuse;
    
 }
 
@@ -43,11 +44,10 @@ body {
   color: #F80;
 }
 
-.start {
-  color: gold;
+
+.background {
+	color: DimGray;
 }
 
-.pickup {
-  color: #F5F;
-}
+
 
