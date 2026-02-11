@@ -4,6 +4,7 @@ export class InputController {
     this.restartQueued = false;
     this.startQueued = false;
     this.pauseToggleQueued = false;
+    this.tapQueued = false;
 
     window.addEventListener('keydown', (event) => {
       if (['Space', 'ArrowUp', 'KeyW'].includes(event.code)) {
@@ -24,7 +25,7 @@ export class InputController {
     });
 
     canvas.addEventListener('pointerdown', () => {
-      this.jumpQueued = true;
+      this.tapQueued = true;
     });
 
     controls.startButton?.addEventListener('click', () => {
@@ -65,6 +66,12 @@ export class InputController {
   consumePauseToggle() {
     const next = this.pauseToggleQueued;
     this.pauseToggleQueued = false;
+    return next;
+  }
+
+  consumeTap() {
+    const next = this.tapQueued;
+    this.tapQueued = false;
     return next;
   }
 }
