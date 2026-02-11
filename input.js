@@ -30,7 +30,11 @@ export class InputController {
       }
     });
 
-    canvas.addEventListener('pointerdown', () => {
+    canvas.addEventListener('pointerdown', (event) => {
+      if (!event.isPrimary) {
+        return;
+      }
+
       this.tapQueued = true;
     });
 
@@ -38,11 +42,13 @@ export class InputController {
       this.startQueued = true;
     });
 
-    controls.jumpButton?.addEventListener('pointerdown', () => {
+    controls.jumpButton?.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
       this.jumpQueued = true;
     });
 
-    controls.slideButton?.addEventListener('pointerdown', () => {
+    controls.slideButton?.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
       this.slideQueued = true;
     });
 

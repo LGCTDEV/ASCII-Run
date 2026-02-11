@@ -5,6 +5,7 @@ import { intersects, calculateSpawnCooldown } from '../obstacle.js';
 import { computeScore } from '../game.js';
 import { GAME_CONFIG } from '../constants.js';
 import { StickmanPlayer } from '../player.js';
+import { RunnerGame } from '../game.js';
 
 test('intersects detects overlap', () => {
   const a = { x: 10, y: 10, width: 20, height: 20 };
@@ -59,4 +60,71 @@ test('player slide ends after duration and restores standing hitbox', () => {
   player.update(player.slideDuration + 0.05);
   assert.equal(player.isSliding, false);
   assert.equal(player.height, standingHeight);
+});
+
+
+function createIdleInput() {
+  return {
+    consumePauseToggle: () => false,
+    consumeTap: () => false,
+    consumeJump: () => false,
+    consumeSlide: () => false,
+    consumeStart: () => false,
+    consumeRestart: () => false
+  };
+}
+
+test('combo decay uses last combo action timestamp', () => {
+  const game = new RunnerGame(createIdleInput(), { render: () => {} });
+  game.status = 'running';
+  game.combo = 6;
+  game.comboMultiplier = 1 + Math.min(2, game.combo * 0.08);
+  game.elapsedSeconds = 10;
+  game.lastComboActionAt = 7.7;
+
+  game.obstacleManager.update = () => {};
+  game.powerUpManager.update = () => {};
+  game.obstacleManager.items = [];
+  game.powerUpManager.items = [];
+
+  game.update(0.3);
+
+  assert.equal(game.combo < 6, true);
+});
+
+test('combo does not decay right after obstacle pass action', () => {
+  const game = new RunnerGame(createIdleInput(), { render: () => {} });
+  game.status = 'running';
+  game.combo = 6;
+  game.comboMultiplier = 1 + Math.min(2, game.combo * 0.08);
+  game.elapsedSeconds = 10;
+  game.lastComboActionAt = 9.9;
+
+  game.obstacleManager.update = () => {};
+  game.powerUpManager.update = () => {};
+  game.obstacleManager.items = [];
+  game.powerUpManager.items = [];
+
+  game.update(0.3);
+
+  assert.equal(game.combo, 6);
+});
+
+test('syncControls supports partial UI bindings', () => {
+  const pauseButton = {
+    disabled: false,
+    textContent: '',
+    setAttribute(name, value) {
+      this[name] = value;
+    }
+  };
+
+  const game = new RunnerGame(createIdleInput(), { render: () => {} }, { pauseButton });
+  game.status = 'paused';
+
+  game.syncControls();
+
+  assert.equal(pauseButton.disabled, false);
+  assert.equal(pauseButton.textContent, 'Reprendre');
+  assert.equal(pauseButton['aria-pressed'], 'true');
 });
