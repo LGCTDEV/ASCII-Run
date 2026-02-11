@@ -1,20 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>ASCII Run</title>
-    <link rel="stylesheet" href="./style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stickman Runner</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-    <div class="center-content"> <!-- wrapper to center the game area -->
-        <pre id="game-area" tabindex="0"></pre>
-    </div>
+  <main class="app-shell">
+    <header class="hud" aria-live="polite">
+      <h1>Stickman Runner</h1>
+      <p>ESPACE / ↑ / Clic pour sauter • R pour rejouer</p>
+    </header>
 
-    <script src="./constants.js"></script>
-    <script src="./player.js"></script>
-    <script src="./obstacle.js"></script>
-    <script src="./drawing.js"></script>
-    <script src="./input.js"></script>
-    <script src="./game.js"></script>
-    <script src="./main.js"></script>
+    <canvas id="game-canvas" width="960" height="400" role="img" aria-label="Jeu runner stickman"></canvas>
+
+    <section class="legend">
+      <p><strong>Objectif :</strong> survivre le plus longtemps possible.</p>
+      <p>Les obstacles accélèrent à chaque niveau.</p>
+    </section>
+  </main>
+
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

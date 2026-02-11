@@ -1,95 +1,21 @@
-//constants.js
-const GAME_WIDTH = 80;
-const GAME_HEIGHT = 20;
-const CHARACTER_LENGTH = 3;
-const MAX_POSITION = 27;
-const START_OBSTACLE_POSITION = 80;
-const MAX_JUMP_HEIGHT = 5.5;
-const GRAVITY = 0.007;
+export const GAME_CONFIG = {
+  width: 960,
+  height: 400,
+  groundY: 320,
+  gravity: 2200,
+  jumpVelocity: -850,
+  baseSpeed: 330,
+  maxSpeed: 760,
+  levelStepSeconds: 14,
+  pointsPerSecond: 12
+};
 
-
-const characterRunFrames = [
-  [
-    '  O ',
-    '/\\>',
-    '\'| ',
-    '>\\ ',
-    '\' \\'
-  ],
-  [
-    '  o ',
-    '<|\\',
-    ' /\'',
-    ' >>',
-    '/ \''
-  ],
-  [
-    ' O  ',
-    '<|>',
-    '\'|\'',
-    '/ \\',
-    '| |'
-  ]
-];
-
-const jumpCharacter = [
-  ' \'O\'',
-  '/|/',
-  ' ! ',
-  '> >',
-  '- -'
-];
-
-const obstaclePatterns = [
-  '*',
-  '**',
-  '***',
-  '****',
-  '*****',
-  '******',
-  '*******',
-  '*******'
-];
-
-const backgroundsPatterns = [ 
- [
-    "                                                          *                     ",
-    "           *                                  *                             *   ",
-    "                                                                   *            ",
-    "                                *                                               ",
-    "                                                                     *          ",
-    "                  *                                                             ",
-    "                                                                                ",
-    "                                                        *                       ",
-    "   *                                     *                                      ",
-	"                                                                     *          ",
-    "                  *                                                             ",
-    "                                                                                ",
-    "                                                        *                       ",
-
-  ],
-  
-   [
-    "                                                            .-~~~-.             ",
-    "                                   *                .- ~ ~-(       )_ _         ",
-    "                                                   /                     ~ -.   ",
-    "                                                  |                           \\",
-    "            *                                      \\                         .'",
-    "                                                      ~- . _____________ . -~   ",
-    "                                              *                             *   ",
-    "                                                                                ",
-    "                                *                                               ",
-    "                                                                     *          ",
-    "                  *                                                             ",
-    "                                                                                ",
-    "                                                        *                       ",
-    "   *                                     *                                      "
-  ],
-
-  
- 
-  // ...more backgrounds...
-];
-
-const MAX_BACKGROUND_HEIGHT = Math.max(...backgroundsPatterns.map(pattern => pattern.length));
-const BACKGROUND_POSITION = GAME_HEIGHT - MAX_BACKGROUND_HEIGHT;
+export const COLORS = {
+  groundLine: '#52643f',
+  obstacle: '#30415f',
+  obstacleTop: '#45618f',
+  text: '#132235',
+  overlay: 'rgba(15, 17, 21, 0.55)',
+  bonus: '#ffc857',
+  moon: '#fff5c3'
+};

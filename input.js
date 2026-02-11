@@ -1,21 +1,34 @@
-//input.js
-const handleJump = (event) => {
-  if (event.code === 'Space' && event.type === 'keydown' && !player.isGameOver && !player.isFirstGame) {
-    if (!player.isJumping) {
-      if (player.isFirstGame) {
-        player.isFirstGame = false;
+export class InputController {
+  constructor(canvas) {
+    this.jumpQueued = false;
+    this.restartQueued = false;
+
+    window.addEventListener('keydown', (event) => {
+      if (['Space', 'ArrowUp', 'KeyW'].includes(event.code)) {
+        event.preventDefault();
+        this.jumpQueued = true;
       }
-      jump();
-    }
+
+      if (event.code === 'KeyR') {
+        event.preventDefault();
+        this.restartQueued = true;
+      }
+    });
+
+    canvas.addEventListener('pointerdown', () => {
+      this.jumpQueued = true;
+    });
   }
-};
 
-const handleRestart = (event) => {
-  if (event.code === 'Space' && event.type === 'keydown' && player.isGameOver && player.canRestart) {
-    resetGame();
+  consumeJump() {
+    const next = this.jumpQueued;
+    this.jumpQueued = false;
+    return next;
   }
-};
 
-
-
-
+  consumeRestart() {
+    const next = this.restartQueued;
+    this.restartQueued = false;
+    return next;
+  }
+}
