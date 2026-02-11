@@ -56,6 +56,32 @@ function drawStickman(ctx, player) {
   ctx.lineWidth = 5;
   ctx.lineCap = 'round';
 
+  if (player.isSliding) {
+    ctx.beginPath();
+    ctx.arc(-12, -24, 10, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-2, -24);
+    ctx.lineTo(20, -16);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(12, -16);
+    ctx.lineTo(28, -8);
+    ctx.moveTo(10, -18);
+    ctx.lineTo(20, -2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-2, -24);
+    ctx.lineTo(-20, -12);
+    ctx.stroke();
+
+    ctx.restore();
+    return;
+  }
+
   ctx.beginPath();
   ctx.arc(0, -68, 11, 0, Math.PI * 2);
   ctx.stroke();
@@ -87,8 +113,13 @@ function drawObstacles(ctx, obstacles) {
     ctx.fillStyle = obstacle.color || COLORS.obstacle;
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-    ctx.fillStyle = COLORS.obstacleTop;
+    ctx.fillStyle = obstacle.lane === 'air' ? '#d6b7ff' : COLORS.obstacleTop;
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, 7);
+
+    if (obstacle.lane === 'air') {
+      ctx.fillStyle = 'rgba(214, 183, 255, 0.2)';
+      ctx.fillRect(obstacle.x + 6, obstacle.y + obstacle.height, obstacle.width - 12, 4);
+    }
   });
 }
 
@@ -133,6 +164,10 @@ function drawHud(ctx, model) {
   ctx.fillText(`Niveau ${model.level}`, 28, 72);
   ctx.fillText(`Combo x${model.comboMultiplier.toFixed(1)}`, 132, 72);
   ctx.fillText(`Bouclier ${'🛡️'.repeat(model.shieldCharges) || '—'}`, 262, 72);
+  if (model.player.isSliding) {
+    ctx.fillStyle = '#d9c2ff';
+    ctx.fillText('Roulade active', 28, 92);
+  }
 
   ctx.font = '600 14px Inter, sans-serif';
   ctx.fillText(`Meilleur score ${model.bestScore}`, 28, 96);
@@ -217,7 +252,7 @@ export class Renderer {
         ctx,
         'Stickman Runner Turbo',
         'Enchaîne des combos, récupère des boucliers et vise un high score.',
-        'Clique sur Démarrer ou appuie sur ESPACE/↑.'
+        'Clique sur Démarrer ou appuie sur ESPACE/↑. Bas/S = roulade.'
       );
     }
 

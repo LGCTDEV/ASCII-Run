@@ -16,6 +16,7 @@ canvas.height = GAME_CONFIG.height;
 const controls = {
   startButton: document.getElementById('start-btn'),
   jumpButton: document.getElementById('jump-btn'),
+  slideButton: document.getElementById('slide-btn'),
   pauseButton: document.getElementById('pause-btn'),
   restartButton: document.getElementById('restart-btn')
 };

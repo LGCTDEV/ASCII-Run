@@ -10,7 +10,7 @@
   <main class="app-shell">
     <header class="hud" aria-live="polite">
       <h1>Stickman Runner Turbo</h1>
-      <p>ESPACE / ↑ / W pour sauter • P pause • R rejouer</p>
+      <p>ESPACE / ↑ / W sauter • ↓ / S roulade • P pause • R rejouer</p>
     </header>
 
     <canvas id="game-canvas" width="960" height="400" role="img" aria-label="Jeu runner stickman"></canvas>
@@ -18,6 +18,7 @@
     <section class="controls" aria-label="Contrôles de jeu">
       <button id="start-btn" class="btn btn-primary" type="button">Démarrer</button>
       <button id="jump-btn" class="btn btn-primary" type="button">Sauter</button>
+      <button id="slide-btn" class="btn btn-primary" type="button">Roulade</button>
       <button id="pause-btn" class="btn" type="button">Pause</button>
       <button id="restart-btn" class="btn btn-danger" type="button">Rejouer</button>
     </section>
@@ -25,7 +26,7 @@
     <section class="legend">
       <p><strong>Objectif :</strong> survivre le plus longtemps possible et créer des combos.</p>
       <p>Enchaîne les obstacles pour gagner des bonus progressifs et des boucliers.</p>
-      <p>Astuce : les « near miss » donnent un bonus +8 si tu passes au ras d’un obstacle.</p>
+      <p>Astuce : la roulade (↓ / S) permet d’éviter les obstacles aériens et de garder ton combo.</p>
     </section>
   </main>
 

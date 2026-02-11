@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { intersects, calculateSpawnCooldown } from '../obstacle.js';
 import { computeScore } from '../game.js';
 import { GAME_CONFIG } from '../constants.js';
+import { StickmanPlayer } from '../player.js';
 
 test('intersects detects overlap', () => {
   const a = { x: 10, y: 10, width: 20, height: 20 };
@@ -35,4 +36,27 @@ test('spawn cooldown guarantees minimum reaction window', () => {
   const safeCooldown = (width + speed * GAME_CONFIG.minReactionSeconds) / speed;
 
   assert.equal(cooldown >= safeCooldown, true);
+});
+
+
+test('player can slide only while grounded', () => {
+  const player = new StickmanPlayer();
+
+  assert.equal(player.slide(), true);
+  assert.equal(player.isSliding, true);
+
+  player.jump();
+  assert.equal(player.slide(), false);
+});
+
+test('player slide ends after duration and restores standing hitbox', () => {
+  const player = new StickmanPlayer();
+  const standingHeight = player.height;
+
+  player.slide();
+  assert.equal(player.height < standingHeight, true);
+
+  player.update(player.slideDuration + 0.05);
+  assert.equal(player.isSliding, false);
+  assert.equal(player.height, standingHeight);
 });

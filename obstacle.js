@@ -1,9 +1,10 @@
 import { GAME_CONFIG } from './constants.js';
 
 const OBSTACLE_PRESETS = [
-  { name: 'short', width: [24, 36], height: [24, 40], color: '#30415f' },
-  { name: 'block', width: [30, 54], height: [36, 70], color: '#3d5279' },
-  { name: 'tower', width: [34, 58], height: [55, 96], color: '#5a6f99' }
+  { name: 'short', width: [24, 36], height: [24, 40], color: '#30415f', lane: 'ground' },
+  { name: 'block', width: [30, 54], height: [36, 70], color: '#3d5279', lane: 'ground' },
+  { name: 'tower', width: [34, 58], height: [55, 96], color: '#5a6f99', lane: 'ground' },
+  { name: 'drone', width: [44, 68], height: [18, 28], color: '#9b6cff', lane: 'air' }
 ];
 
 class Obstacle {
@@ -14,10 +15,12 @@ class Obstacle {
     const preset = OBSTACLE_PRESETS[Math.floor(rng() * OBSTACLE_PRESETS.length)];
     this.type = preset.name;
     this.width = lerpRange(preset.width, rng);
-    const extraHeight = Math.min(22, level * 2);
+    const extraHeight = preset.lane === 'air' ? Math.min(8, level * 0.6) : Math.min(22, level * 2);
     this.height = lerpRange(preset.height, rng) + extraHeight;
     this.color = preset.color;
-    this.y = GAME_CONFIG.groundY - this.height;
+    this.lane = preset.lane;
+    const airY = GAME_CONFIG.groundY - 108 - rng() * 46;
+    this.y = this.lane === 'air' ? airY : GAME_CONFIG.groundY - this.height;
     this.scored = false;
   }
 
