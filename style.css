@@ -1,53 +1,67 @@
-/* style.css */
+:root {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --panel: #171a21;
+  --text: #e8edf2;
+  --accent: #ff8a00;
+  --danger: #ff5b6e;
+  --ok: #36d399;
+}
+
+* {
+  box-sizing: border-box;
+}
 
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #000;
-    color: #F80;
-    font-size: 16px;
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at top, #1d222d, var(--bg));
+  color: var(--text);
+  font-family: Inter, Segoe UI, Roboto, system-ui, sans-serif;
 }
 
-.game-area {
-  font-family: monospace;
-  font-size: 16px;
-  line-height: 1;
-  white-space: pre;
-  overflow: hidden;
+.app-shell {
+  width: min(100%, 1080px);
+  background: color-mix(in srgb, var(--panel) 90%, black);
+  border: 1px solid #2a3242;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
 }
 
-.game-control, .start {
-  color: gold;
+.hud h1 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  color: var(--accent);
 }
 
-.character {
-  color: Aqua;
+.hud p {
+  margin: 0.35rem 0 1rem;
+  color: #c2cad6;
 }
 
-.obstacle {
-  color: Chartreuse;
-   
+#game-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #2f3b51;
+  background: linear-gradient(#89cff0, #b8ebff 70%, #9acb61 70%, #79a84f 100%);
+  cursor: pointer;
 }
 
-.game-over {
-  color: Purple;
+.legend {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  color: #c2cad6;
 }
 
-.bonus {
-  color: red;
+.legend p {
+  margin: 0;
 }
-
-.score {
-  color: #F80;
-}
-
-
-.background {
-	color: DimGray;
-}
-
-
-

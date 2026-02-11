@@ -1,64 +1,64 @@
-// obstacle.js
+import { GAME_CONFIG } from './constants.js';
 
-const obstacle = {
-  position: START_OBSTACLE_POSITION,
-  speed: 0.25,
-  patternIndex: 0,
-  isBonus: false
-};
-
-const updateObstaclePosition = () => {
-  obstacle.position -= obstacle.speed;
-
-  if (player.score > player.topScore) {
-    player.topScore = player.score;
-    localStorage.setItem('topScore', player.topScore);
+class Obstacle {
+  constructor(x, speed, level) {
+    this.x = x;
+    this.speed = speed;
+    this.width = 26 + Math.random() * 44;
+    this.height = 26 + Math.random() * Math.min(70, 28 + level * 6);
+    this.y = GAME_CONFIG.groundY - this.height;
+    this.scored = false;
   }
 
-  if (obstacle.position <= 0 - (obstacle.isBonus ? 1 : obstaclePatterns[obstacle.patternIndex].length)) {
-    if (player.level < 10 || !player.isJumping) {
-      obstacle.position = START_OBSTACLE_POSITION;
-      player.score += 10;
-      if (player.score % 400 === 0) {
-        obstacle.isBonus = true;
-      } else {
-        obstacle.isBonus = false;
-        obstacle.patternIndex = Math.floor(Math.random() * obstaclePatterns.length);
-      }
-      player.speed += 0.01;
-      obstacle.speed += 0.01;
+  update(deltaTime) {
+    this.x -= this.speed * deltaTime;
+  }
 
-      if (player.score % 100 === 0) {
-        player.level += 1;
-        obstacle.speed += 0.01 * player.level;
-        if (player.level > player.topLevel) {
-          player.topLevel = player.level;
-          localStorage.setItem('topLevel', player.topLevel);
-        }
-      }
+  getHitbox() {
+    return {
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height
+    };
+  }
+}
+
+export class ObstacleManager {
+  constructor() {
+    this.items = [];
+    this.spawnCooldown = 0;
+  }
+
+  reset() {
+    this.items = [];
+    this.spawnCooldown = 0;
+  }
+
+  update(deltaTime, gameSpeed, level) {
+    this.spawnCooldown -= deltaTime;
+
+    if (this.spawnCooldown <= 0) {
+      this.spawn(gameSpeed, level);
+      const intensity = Math.max(0.52, 1.25 - level * 0.06);
+      this.spawnCooldown = intensity + Math.random() * 0.75;
     }
-  }
-};
 
-const checkCollision = () => {
-  const obstacleWidth = obstacle.isBonus ? 1 : obstaclePatterns[obstacle.patternIndex].length;
-  const atObstacle = player.position >= obstacle.position && player.position < obstacle.position + obstacleWidth;
-  const justAfterObstacle = player.position >= obstacle.position - CHARACTER_LENGTH && player.position < obstacle.position;
-  const onObstacle = atObstacle || justAfterObstacle;
-  const obstacleHeight = 1;
-  const aboveObstacle = player.jumpHeight > obstacleHeight;
-
-  if (onObstacle && !aboveObstacle) {
-    if (obstacle.isBonus) {
-      obstacle.speed /= 2;
-      obstacle.position = START_OBSTACLE_POSITION;
-      obstacle.isBonus = false;
-      obstacle.patternIndex = Math.floor(Math.random() * obstaclePatterns.length);
-      return false;
-    } else {
-      return true;
-    }
+    this.items.forEach((obstacle) => obstacle.update(deltaTime));
+    this.items = this.items.filter((obstacle) => obstacle.x + obstacle.width > -30);
   }
 
-  return false;
-};
+  spawn(gameSpeed, level) {
+    const x = GAME_CONFIG.width + 40 + Math.random() * 260;
+    this.items.push(new Obstacle(x, gameSpeed, level));
+  }
+}
+
+export function intersects(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
