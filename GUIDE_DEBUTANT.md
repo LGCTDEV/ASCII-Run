@@ -1,4 +1,4 @@
-# Guide débutant — Stickman Runner
+# Guide débutant — Stickman Runner Turbo
 
 Ce projet est maintenant un runner 2D en **Canvas API** (et non plus un rendu ASCII dans un `<pre>`).
 
@@ -17,12 +17,13 @@ Ce projet est maintenant un runner 2D en **Canvas API** (et non plus un rendu AS
 - `obstacle.js` : génération/gestion des obstacles + collisions AABB.
 - `input.js` : contrôles clavier et pointer.
 - `drawing.js` : rendu du monde, du stickman, HUD, overlays.
-- `game.js` : état global, boucle update, score, niveaux, game over.
+- `game.js` : état global, boucle update, score, combo, niveaux, game over.
 - `main.js` : bootstrap de l’application.
 
 ## Contrôles
 
-- **Espace**, **Flèche haut** ou **clic** : sauter
+- **Espace**, **Flèche haut**, **W** ou bouton **Sauter** : sauter
+- **P** : pause / reprise
 - **R** : recommencer après un game over
 
 ## Boucle de jeu

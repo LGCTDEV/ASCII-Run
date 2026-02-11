@@ -1,6 +1,6 @@
 import { GAME_CONFIG } from './constants.js';
 import { StickmanPlayer } from './player.js';
-import { ObstacleManager, intersects } from './obstacle.js';
+import { ObstacleManager, PowerUpManager, intersects } from './obstacle.js';
 
 const BEST_SCORE_KEY = 'stickmanRunnerBestScore';
 const BEST_LEVEL_KEY = 'stickmanRunnerBestLevel';
@@ -22,8 +22,9 @@ function safeSetStorageNumber(key, value) {
   }
 }
 
-export function computeScore(elapsedSeconds, bonusScore) {
-  return Math.floor(elapsedSeconds * GAME_CONFIG.pointsPerSecond) + bonusScore;
+export function computeScore(elapsedSeconds, bonusScore, comboMultiplier = 1) {
+  const baseScore = Math.floor(elapsedSeconds * GAME_CONFIG.pointsPerSecond);
+  return baseScore + Math.floor(bonusScore * Math.max(1, comboMultiplier));
 }
 
 export class RunnerGame {
@@ -34,6 +35,7 @@ export class RunnerGame {
 
     this.player = new StickmanPlayer();
     this.obstacleManager = new ObstacleManager();
+    this.powerUpManager = new PowerUpManager();
 
     this.status = 'ready';
     this.elapsedSeconds = 0;
@@ -42,6 +44,10 @@ export class RunnerGame {
     this.score = 0;
     this.bonusScore = 0;
     this.level = 1;
+    this.combo = 0;
+    this.comboMultiplier = 1;
+    this.shieldCharges = 0;
+    this.lastNearMissAt = -999;
     this.effects = { particles: [], hitFlash: 0, shake: 0, scorePop: null };
 
     this.bestScore = safeGetStorageNumber(BEST_SCORE_KEY, 0);
@@ -75,6 +81,16 @@ export class RunnerGame {
     }
   }
 
+  queueScorePop(text, color = '#ffc857') {
+    this.effects.scorePop = {
+      text,
+      x: this.player.x + 20,
+      y: this.player.y - 90,
+      life: 0.9,
+      color
+    };
+  }
+
   start() {
     this.status = 'running';
     this.elapsedSeconds = 0;
@@ -83,9 +99,14 @@ export class RunnerGame {
     this.score = 0;
     this.bonusScore = 0;
     this.level = 1;
+    this.combo = 0;
+    this.comboMultiplier = 1;
+    this.shieldCharges = 0;
+    this.lastNearMissAt = -999;
     this.effects = { particles: [], hitFlash: 0, shake: 0, scorePop: null };
     this.player = new StickmanPlayer();
     this.obstacleManager.reset();
+    this.powerUpManager.reset();
     this.syncControls();
   }
 
@@ -136,9 +157,105 @@ export class RunnerGame {
     }
   }
 
+  handleTapAction() {
+    if (this.status === 'ready') {
+      this.start();
+      return;
+    }
+
+    if (this.status === 'gameover') {
+      this.start();
+      return;
+    }
+
+    if (this.status === 'running') {
+      const didJump = this.player.jump();
+      if (didJump) {
+        this.spawnParticles(this.player.x, this.player.y - 20, 6, '#fff7d1');
+      }
+    }
+  }
+
+  handleJump() {
+    if (this.status === 'ready') {
+      this.start();
+      return;
+    }
+
+    if (this.status === 'gameover') {
+      this.start();
+      return;
+    }
+
+    if (this.status !== 'running') {
+      return;
+    }
+
+    const didJump = this.player.jump();
+    if (didJump) {
+      this.spawnParticles(this.player.x, this.player.y - 20, 6, '#fff7d1');
+    }
+  }
+
+  registerObstaclePass(obstacle) {
+    if (obstacle.scored || obstacle.x + obstacle.width >= this.player.x) {
+      return;
+    }
+
+    obstacle.scored = true;
+    this.combo += 1;
+    this.comboMultiplier = 1 + Math.min(2, this.combo * 0.08);
+
+    const comboBonus = 5 + Math.min(20, Math.floor(this.combo * 0.6));
+    this.bonusScore += comboBonus;
+    this.queueScorePop(`+${comboBonus}`);
+
+    if (this.combo > 0 && this.combo % 6 === 0) {
+      this.shieldCharges += 1;
+      this.queueScorePop('Bouclier +1', '#8dd8ff');
+    }
+  }
+
+  registerNearMiss(obstacle) {
+    const obstacleBack = obstacle.x + obstacle.width;
+    const nearPlayer = Math.abs(obstacleBack - this.player.x) < 36;
+    const lowJump = this.player.y < GAME_CONFIG.groundY - 18 && this.player.y > GAME_CONFIG.groundY - 75;
+
+    if (!nearPlayer || !lowJump || this.elapsedSeconds - this.lastNearMissAt < 0.45) {
+      return;
+    }
+
+    this.lastNearMissAt = this.elapsedSeconds;
+    this.bonusScore += 8;
+    this.queueScorePop('Near miss +8', '#36d399');
+  }
+
+  handleCollision() {
+    if (this.shieldCharges > 0) {
+      this.shieldCharges -= 1;
+      this.effects.hitFlash = 0.25;
+      this.effects.shake = 4;
+      this.combo = Math.max(0, this.combo - 2);
+      this.comboMultiplier = 1 + Math.min(2, this.combo * 0.08);
+      this.queueScorePop('Bouclier sauvé !', '#8dd8ff');
+      return true;
+    }
+
+    this.gameOver();
+    return false;
+  }
+
   update(deltaTime) {
     if (this.input.consumePauseToggle()) {
       this.togglePause();
+    }
+
+    if (this.input.consumeTap()) {
+      this.handleTapAction();
+    }
+
+    if (this.input.consumeJump()) {
+      this.handleJump();
     }
 
     if (this.status === 'ready') {
@@ -162,13 +279,6 @@ export class RunnerGame {
       return;
     }
 
-    if (this.input.consumeJump()) {
-      const didJump = this.player.jump();
-      if (didJump) {
-        this.spawnParticles(this.player.x, this.player.y - 20, 6, '#fff7d1');
-      }
-    }
-
     this.elapsedSeconds += deltaTime;
     this.level = 1 + Math.floor(this.elapsedSeconds / GAME_CONFIG.levelStepSeconds);
 
@@ -186,24 +296,48 @@ export class RunnerGame {
     }
 
     this.obstacleManager.update(deltaTime, this.gameSpeed, this.level);
+    this.powerUpManager.update(deltaTime, this.gameSpeed, this.level);
 
     const playerHitbox = this.player.getHitbox();
-    const collides = this.obstacleManager.items.some((obstacle) => intersects(playerHitbox, obstacle.getHitbox()));
 
-    if (collides) {
-      this.gameOver();
-      return;
+    for (const obstacle of this.obstacleManager.items) {
+      if (intersects(playerHitbox, obstacle.getHitbox())) {
+        const canContinue = this.handleCollision();
+        obstacle.x = -200;
+        if (!canContinue) {
+          return;
+        }
+      }
+
+      this.registerObstaclePass(obstacle);
+      this.registerNearMiss(obstacle);
     }
 
-    this.obstacleManager.items.forEach((obstacle) => {
-      if (!obstacle.scored && obstacle.x + obstacle.width < this.player.x) {
-        obstacle.scored = true;
-        this.bonusScore += 5;
-        this.effects.scorePop = { text: '+5', x: this.player.x + 20, y: this.player.y - 90, life: 0.7 };
+    this.powerUpManager.items = this.powerUpManager.items.filter((powerUp) => {
+      const hitbox = {
+        x: powerUp.x,
+        y: powerUp.y,
+        width: powerUp.size,
+        height: powerUp.size
+      };
+
+      if (!intersects(playerHitbox, hitbox)) {
+        return true;
       }
+
+      this.shieldCharges = Math.min(3, this.shieldCharges + 1);
+      this.bonusScore += 20;
+      this.spawnParticles(powerUp.x, powerUp.y, 10, '#8dd8ff');
+      this.queueScorePop('Power-up +20', '#8dd8ff');
+      return false;
     });
 
-    this.score = computeScore(this.elapsedSeconds, this.bonusScore);
+    if (this.combo > 0 && this.elapsedSeconds - this.lastNearMissAt > 2.2 && this.player.isGrounded) {
+      this.combo = Math.max(0, this.combo - deltaTime * 3);
+      this.comboMultiplier = 1 + Math.min(2, this.combo * 0.08);
+    }
+
+    this.score = computeScore(this.elapsedSeconds, this.bonusScore, this.comboMultiplier);
     this.updateEffects(deltaTime);
   }
 
@@ -212,20 +346,26 @@ export class RunnerGame {
     this.lastTime = now;
 
     this.update(deltaTime);
-    this.renderer.render({
+
+    const model = {
       status: this.status,
       elapsedSeconds: this.elapsedSeconds,
       distance: this.distance,
-      player: this.player,
-      obstacles: this.obstacleManager.items,
       score: this.score,
-      bonusScore: this.bonusScore,
       level: this.level,
+      gameSpeed: this.gameSpeed,
       bestScore: this.bestScore,
       bestLevel: this.bestLevel,
+      combo: this.combo,
+      comboMultiplier: this.comboMultiplier,
+      shieldCharges: this.shieldCharges,
+      player: this.player,
+      obstacles: this.obstacleManager.items,
+      powerUps: this.powerUpManager.items,
       effects: this.effects
-    });
+    };
 
+    this.renderer.render(model);
     requestAnimationFrame((time) => this.frame(time));
   }
 }

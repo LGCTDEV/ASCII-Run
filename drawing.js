@@ -1,125 +1,157 @@
 import { COLORS, GAME_CONFIG } from './constants.js';
 
 function drawSky(ctx, elapsedSeconds) {
-  const t = elapsedSeconds * 0.04;
+  const gradient = ctx.createLinearGradient(0, 0, 0, GAME_CONFIG.height);
+  const pulse = Math.sin(elapsedSeconds * 0.24) * 0.05;
 
-  ctx.fillStyle = '#d8f3ff';
-  ctx.beginPath();
-  ctx.arc(830, 66, 28, 0, Math.PI * 2);
-  ctx.fill();
+  gradient.addColorStop(0, `hsl(204, 86%, ${76 + pulse * 20}%)`);
+  gradient.addColorStop(0.7, `hsl(196, 91%, ${88 + pulse * 15}%)`);
+  gradient.addColorStop(0.7, '#9acb61');
+  gradient.addColorStop(1, '#79a84f');
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, GAME_CONFIG.width, GAME_CONFIG.height);
+
+  const moonX = GAME_CONFIG.width - 90 + Math.sin(elapsedSeconds * 0.22) * 18;
+  const moonY = 80 + Math.cos(elapsedSeconds * 0.28) * 8;
 
   ctx.fillStyle = COLORS.moon;
   ctx.beginPath();
-  ctx.arc(120 + Math.sin(t) * 12, 74, 25, 0, Math.PI * 2);
+  ctx.arc(moonX, moonY, 28, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  for (let i = 0; i < 3; i++) {
-    const x = (i * 330 + (elapsedSeconds * (18 + i * 8))) % (GAME_CONFIG.width + 180) - 140;
-    const y = 58 + i * 34;
-
-    ctx.beginPath();
-    ctx.ellipse(x, y, 54, 20, 0, 0, Math.PI * 2);
-    ctx.ellipse(x + 38, y + 3, 38, 15, 0, 0, Math.PI * 2);
-    ctx.ellipse(x - 28, y + 3, 36, 15, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 function drawGround(ctx, distance) {
-  ctx.fillStyle = '#88bb58';
+  ctx.fillStyle = '#5f8f45';
   ctx.fillRect(0, GAME_CONFIG.groundY, GAME_CONFIG.width, GAME_CONFIG.height - GAME_CONFIG.groundY);
 
   ctx.strokeStyle = COLORS.groundLine;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(0, GAME_CONFIG.groundY + 1);
-  ctx.lineTo(GAME_CONFIG.width, GAME_CONFIG.groundY + 1);
+  ctx.moveTo(0, GAME_CONFIG.groundY);
+  ctx.lineTo(GAME_CONFIG.width, GAME_CONFIG.groundY);
   ctx.stroke();
 
-  const dashSpeed = distance * 0.5;
-  for (let i = -1; i < 22; i++) {
-    const x = ((i * 54) - (dashSpeed % 54) + GAME_CONFIG.width) % GAME_CONFIG.width;
-    ctx.fillStyle = '#6a9445';
-    ctx.fillRect(x, GAME_CONFIG.groundY + 24, 30, 4);
+  ctx.strokeStyle = '#82b45f';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 26; i++) {
+    const x = (i * 54 - (distance * 1.8) % 54 + GAME_CONFIG.width) % GAME_CONFIG.width;
+    ctx.beginPath();
+    ctx.moveTo(x, GAME_CONFIG.groundY + 10);
+    ctx.lineTo(x - 10, GAME_CONFIG.groundY + 26);
+    ctx.stroke();
   }
 }
 
 function drawStickman(ctx, player) {
-  const bob = player.isGrounded ? Math.sin(player.runCycle) * 2.5 : -3;
-  const baseX = player.x;
-  const baseY = player.y + bob;
+  const bounce = Math.sin(player.runCycle) * (player.isGrounded ? 4 : 1.5);
+  const baseY = player.y + bounce;
+  const legSwing = Math.sin(player.runCycle * 2.4) * 11;
+  const armSwing = Math.sin(player.runCycle * 2.8 + 1.1) * 10;
 
-  ctx.strokeStyle = '#181818';
+  ctx.save();
+  ctx.translate(player.x, baseY);
+
+  ctx.strokeStyle = '#142437';
   ctx.lineWidth = 5;
   ctx.lineCap = 'round';
 
   ctx.beginPath();
-  ctx.arc(baseX, baseY - 68, 13, 0, Math.PI * 2);
+  ctx.arc(0, -68, 11, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(baseX, baseY - 55);
-  ctx.lineTo(baseX, baseY - 25);
+  ctx.moveTo(0, -56);
+  ctx.lineTo(0, -26);
   ctx.stroke();
 
-  const armSwing = Math.sin(player.runCycle) * 15;
   ctx.beginPath();
-  ctx.moveTo(baseX, baseY - 46);
-  ctx.lineTo(baseX - 18, baseY - 36 - armSwing * 0.2);
-  ctx.moveTo(baseX, baseY - 45);
-  ctx.lineTo(baseX + 18, baseY - 36 + armSwing * 0.2);
+  ctx.moveTo(0, -45);
+  ctx.lineTo(-16 + armSwing * 0.45, -36);
+  ctx.moveTo(0, -45);
+  ctx.lineTo(16 - armSwing * 0.45, -36);
   ctx.stroke();
 
-  const legSwing = Math.sin(player.runCycle) * 10;
   ctx.beginPath();
-  ctx.moveTo(baseX, baseY - 24);
-  ctx.lineTo(baseX - 16, baseY + legSwing);
-  ctx.moveTo(baseX, baseY - 24);
-  ctx.lineTo(baseX + 16, baseY - legSwing);
+  ctx.moveTo(0, -26);
+  ctx.lineTo(-11 + legSwing, 0);
+  ctx.moveTo(0, -26);
+  ctx.lineTo(11 - legSwing, 0);
   ctx.stroke();
+
+  ctx.restore();
 }
 
 function drawObstacles(ctx, obstacles) {
   obstacles.forEach((obstacle) => {
-    ctx.fillStyle = COLORS.obstacle;
+    ctx.fillStyle = obstacle.color || COLORS.obstacle;
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
     ctx.fillStyle = COLORS.obstacleTop;
-    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, 8);
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, 7);
   });
 }
 
-function drawHud(ctx, state) {
-  ctx.fillStyle = 'rgba(255,255,255,0.72)';
-  ctx.fillRect(12, 12, 360, 106);
+function drawPowerUps(ctx, powerUps) {
+  powerUps.forEach((powerUp) => {
+    const centerX = powerUp.x + powerUp.size / 2;
+    const centerY = powerUp.y + powerUp.size / 2;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(141, 216, 255, 0.22)';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, powerUp.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#8dd8ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, powerUp.size * 0.45, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#d8f3ff';
+    ctx.font = '700 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('✦', centerX, centerY + 4);
+    ctx.restore();
+  });
+}
+
+function drawHud(ctx, model) {
+  const panelWidth = 430;
+  const panelHeight = 96;
+
+  ctx.fillStyle = 'rgba(10, 16, 26, 0.42)';
+  ctx.fillRect(16, 16, panelWidth, panelHeight);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 24px Inter, sans-serif';
+  ctx.fillText(`Score ${model.score}`, 26, 46);
 
   ctx.fillStyle = COLORS.text;
-  ctx.font = '700 24px Inter, sans-serif';
-  ctx.fillText(`Score: ${state.score}`, 24, 44);
+  ctx.font = '600 16px Inter, sans-serif';
+  ctx.fillText(`Niveau ${model.level}`, 28, 72);
+  ctx.fillText(`Combo x${model.comboMultiplier.toFixed(1)}`, 132, 72);
+  ctx.fillText(`Bouclier ${'🛡️'.repeat(model.shieldCharges) || '—'}`, 262, 72);
 
-  ctx.font = '600 18px Inter, sans-serif';
-  ctx.fillStyle = '#19324f';
-  ctx.fillText(`Niveau: ${state.level}`, 24, 72);
-  ctx.fillText(`Record score: ${state.bestScore}`, 24, 96);
-  ctx.fillText(`Record niveau: ${state.bestLevel}`, 180, 96);
+  ctx.font = '600 14px Inter, sans-serif';
+  ctx.fillText(`Meilleur score ${model.bestScore}`, 28, 96);
+  ctx.fillText(`Meilleur niveau ${model.bestLevel}`, 228, 96);
 }
 
 function drawEffects(ctx, effects) {
-  effects.particles.forEach((particle) => {
+  effects.particles.forEach((p) => {
     ctx.save();
-    ctx.globalAlpha = Math.max(0, particle.life);
-    ctx.fillStyle = particle.color;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, 3.2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.globalAlpha = Math.max(0, p.life * 1.5);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, 3, 3);
     ctx.restore();
   });
 
   if (effects.scorePop) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, effects.scorePop.life * 1.4);
-    ctx.fillStyle = COLORS.bonus;
+    ctx.fillStyle = effects.scorePop.color || COLORS.bonus;
     ctx.font = '700 24px Inter, sans-serif';
     ctx.fillText(effects.scorePop.text, effects.scorePop.x, effects.scorePop.y);
     ctx.restore();
@@ -171,6 +203,7 @@ export class Renderer {
     drawSky(ctx, model.elapsedSeconds);
     drawGround(ctx, model.distance);
     drawObstacles(ctx, model.obstacles);
+    drawPowerUps(ctx, model.powerUps);
     drawStickman(ctx, model.player);
     drawHud(ctx, model);
     drawEffects(ctx, model.effects);
@@ -182,8 +215,8 @@ export class Renderer {
     if (model.status === 'ready') {
       drawOverlay(
         ctx,
-        'Stickman Runner',
-        'Évite les obstacles et garde le rythme.',
+        'Stickman Runner Turbo',
+        'Enchaîne des combos, récupère des boucliers et vise un high score.',
         'Clique sur Démarrer ou appuie sur ESPACE/↑.'
       );
     }

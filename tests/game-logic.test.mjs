@@ -22,6 +22,11 @@ test('computeScore preserves bonus points over time', () => {
   assert.equal(computeScore(10.1, 15) >= computeScore(10, 15), true);
 });
 
+test('computeScore applies combo multiplier to bonus score only', () => {
+  const base = Math.floor(12 * GAME_CONFIG.pointsPerSecond);
+  assert.equal(computeScore(12, 30, 1.5), base + 45);
+});
+
 test('spawn cooldown guarantees minimum reaction window', () => {
   const level = 12;
   const speed = 700;

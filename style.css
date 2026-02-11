@@ -49,7 +49,6 @@ body {
   display: block;
   border-radius: 10px;
   border: 1px solid #2f3b51;
-  background: linear-gradient(#89cff0, #b8ebff 70%, #9acb61 70%, #79a84f 100%);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -69,6 +68,16 @@ body {
   padding: 0.62rem 0.8rem;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn:disabled {

@@ -7,7 +7,7 @@ export const GAME_CONFIG = {
   baseSpeed: 330,
   maxSpeed: 760,
   levelStepSeconds: 14,
-  pointsPerSecond: 12,
+  pointsPerSecond: 14,
   minReactionSeconds: 0.9,
   maxDeltaTime: 0.033
 };
