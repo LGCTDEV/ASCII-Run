@@ -51,6 +51,39 @@ body {
   border: 1px solid #2f3b51;
   background: linear-gradient(#89cff0, #b8ebff 70%, #9acb61 70%, #79a84f 100%);
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.controls {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.btn {
+  border: 1px solid #37455f;
+  background: #212a3a;
+  color: var(--text);
+  border-radius: 9px;
+  padding: 0.62rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  border-color: #7a4a07;
+  background: color-mix(in srgb, var(--accent) 40%, #33210a);
+}
+
+.btn-danger {
+  border-color: #77313a;
+  background: color-mix(in srgb, var(--danger) 35%, #2e1217);
 }
 
 .legend {
@@ -64,4 +97,10 @@ body {
 
 .legend p {
   margin: 0;
+}
+
+@media (max-width: 800px) {
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
