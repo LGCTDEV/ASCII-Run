@@ -48,6 +48,7 @@ export class RunnerGame {
     this.comboMultiplier = 1;
     this.shieldCharges = 0;
     this.lastNearMissAt = -999;
+    this.lastComboActionAt = 0;
     this.effects = { particles: [], hitFlash: 0, shake: 0, scorePop: null };
 
     this.bestScore = safeGetStorageNumber(BEST_SCORE_KEY, 0);
@@ -58,14 +59,19 @@ export class RunnerGame {
   }
 
   syncControls() {
-    if (!this.ui.pauseButton || !this.ui.startButton || !this.ui.restartButton) {
-      return;
+    if (this.ui.pauseButton) {
+      this.ui.pauseButton.disabled = this.status === 'ready' || this.status === 'gameover';
+      this.ui.pauseButton.textContent = this.status === 'paused' ? 'Reprendre' : 'Pause';
+      this.ui.pauseButton.setAttribute('aria-pressed', String(this.status === 'paused'));
     }
 
-    this.ui.pauseButton.disabled = this.status === 'ready' || this.status === 'gameover';
-    this.ui.pauseButton.textContent = this.status === 'paused' ? 'Reprendre' : 'Pause';
-    this.ui.startButton.disabled = this.status !== 'ready';
-    this.ui.restartButton.disabled = this.status === 'ready';
+    if (this.ui.startButton) {
+      this.ui.startButton.disabled = this.status !== 'ready';
+    }
+
+    if (this.ui.restartButton) {
+      this.ui.restartButton.disabled = this.status === 'ready';
+    }
   }
 
   spawnParticles(x, y, amount = 7, color = '#ffffff') {
@@ -103,6 +109,7 @@ export class RunnerGame {
     this.comboMultiplier = 1;
     this.shieldCharges = 0;
     this.lastNearMissAt = -999;
+    this.lastComboActionAt = 0;
     this.effects = { particles: [], hitFlash: 0, shake: 0, scorePop: null };
     this.player = new StickmanPlayer();
     this.obstacleManager.reset();
@@ -158,14 +165,8 @@ export class RunnerGame {
   }
 
   handleTapAction() {
-    if (this.status === 'ready') {
+    if (this.status === 'ready' || this.status === 'gameover') {
       this.start();
-      return;
-    }
-
-    if (this.status === 'gameover') {
-      this.start();
-      return;
     }
 
     if (this.status === 'running') {
@@ -177,9 +178,8 @@ export class RunnerGame {
   }
 
   handleSlide() {
-    if (this.status === 'ready') {
+    if (this.status === 'ready' || this.status === 'gameover') {
       this.start();
-      return;
     }
 
     if (this.status !== 'running') {
@@ -194,14 +194,8 @@ export class RunnerGame {
   }
 
   handleJump() {
-    if (this.status === 'ready') {
+    if (this.status === 'ready' || this.status === 'gameover') {
       this.start();
-      return;
-    }
-
-    if (this.status === 'gameover') {
-      this.start();
-      return;
     }
 
     if (this.status !== 'running') {
@@ -221,6 +215,7 @@ export class RunnerGame {
 
     obstacle.scored = true;
     this.combo += 1;
+    this.lastComboActionAt = this.elapsedSeconds;
     this.comboMultiplier = 1 + Math.min(2, this.combo * 0.08);
 
     const comboBonus = 5 + Math.min(20, Math.floor(this.combo * 0.6));
@@ -244,6 +239,7 @@ export class RunnerGame {
     }
 
     this.lastNearMissAt = this.elapsedSeconds;
+    this.lastComboActionAt = this.elapsedSeconds;
     this.bonusScore += evasiveSlide ? 10 : 8;
     this.queueScorePop(evasiveSlide ? 'Esquive roulade +10' : 'Near miss +8', '#36d399');
   }
@@ -354,7 +350,7 @@ export class RunnerGame {
       return false;
     });
 
-    if (this.combo > 0 && this.elapsedSeconds - this.lastNearMissAt > 2.2 && this.player.isGrounded) {
+    if (this.combo > 0 && this.elapsedSeconds - this.lastComboActionAt > 2.2 && this.player.isGrounded) {
       this.combo = Math.max(0, this.combo - deltaTime * 3);
       this.comboMultiplier = 1 + Math.min(2, this.combo * 0.08);
     }

@@ -150,7 +150,7 @@ function drawPowerUps(ctx, powerUps) {
 
 function drawHud(ctx, model) {
   const panelWidth = 430;
-  const panelHeight = 96;
+  const panelHeight = model.player.isSliding ? 112 : 98;
 
   ctx.fillStyle = 'rgba(10, 16, 26, 0.42)';
   ctx.fillRect(16, 16, panelWidth, panelHeight);
@@ -251,8 +251,8 @@ export class Renderer {
       drawOverlay(
         ctx,
         'Stickman Runner Turbo',
-        'Enchaîne des combos, récupère des boucliers et vise un high score.',
-        'Clique sur Démarrer ou appuie sur ESPACE/↑. Bas/S = roulade.'
+        'Enchaîne des combos, récupère des boucliers et vise le meilleur score.',
+        'Clique sur Démarrer ou appuie sur ESPACE/↑. ↓ / S = roulade.'
       );
     }
 

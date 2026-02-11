@@ -1,29 +1,32 @@
 # Audit complet — Stickman Runner Turbo
 
 ## Résumé exécutif
-Le jeu est déjà plaisant, mais pouvait devenir plus fun avec davantage de variété et un meilleur « game feel ». Les axes majeurs concernent la lecture des actions, la diversité des obstacles et l’ajout d’une mécanique défensive active.
+Le cœur du gameplay est solide (rythme, lisibilité globale, feedbacks), mais plusieurs points impactaient encore la constance de la difficulté, l'accessibilité, et la clarté UX. Les 10 axes ci-dessous couvrent jouabilité, UI/UX, bugs, fonctionnalités et typos.
 
-## 10 points d’amélioration (jouabilité / UI-UX / bugs / fonctionnalités / typos)
+## 10 points à améliorer
 
-1. **Ajouter une roulade/glissade** : permet d’esquiver des menaces sans sauter, réduit la frustration.
-2. **Créer des obstacles aériens dédiés** : force le joueur à alterner saut et roulade.
-3. **Clarifier les contrôles dans l’UI** : indiquer explicitement les touches de roulade.
-4. **Ajouter un bouton roulade mobile** : améliore l’accessibilité tactile.
-5. **Feedback action renforcé** : message visuel « Roulade ! » + particules dédiées.
-6. **Récompenser l’esquive avancée** : bonus near miss spécial via roulade.
-7. **Rééquilibrer la progression difficulté** : garder des fenêtres de réaction lisibles avec montée de vitesse.
-8. **Mieux signaler l’état joueur** : afficher « Roulade active » dans le HUD.
-9. **Harmoniser microcopy FR et corriger typos** : libellés cohérents (saut/roulade/pause/rejouer).
-10. **Étendre les tests de logique** : sécuriser collisions et scoring liés aux nouvelles mécaniques.
+1. **Fix combo decay** : le combo ne doit décroître qu'en cas d'inactivité réelle d'actions combo.
+2. **Durcir la synchro des boutons UI** : la logique ne doit pas casser si un bouton manque.
+3. **Limiter le bruit d'input pointer** : filtrer les pointeurs non primaires.
+4. **Prévenir les doubles actions tactiles** : fiabiliser l'enqueue des actions jump/slide.
+5. **Expose state pause pour A11y** : utiliser `aria-pressed`.
+6. **Uniformiser les libellés de contrôles** : syntaxe cohérente (`:`) pour réduire les ambiguïtés.
+7. **Relier canvas + aide des contrôles** : `aria-describedby` pour le contexte d'usage.
+8. **Corriger HUD clipping** : ajuster la hauteur du panneau selon les états affichés.
+9. **Harmoniser la microcopy FR** : « meilleur score » à la place de « high score ».
+10. **Étendre les tests critiques** : combo timing + sync contrôles partiels.
 
 ## Priorisation recommandée
-- **Haute priorité** : 1, 2, 3, 4, 10.
-- **Moyenne priorité** : 5, 6, 7, 8.
+
+- **Haute priorité** : 1, 2, 3, 8, 10.
+- **Moyenne priorité** : 4, 5, 6, 7.
 - **Finition** : 9.
 
 ## KPI à suivre
+
 - Durée moyenne de session.
-- Score moyen, P90 score, meilleur score quotidien.
-- Taux de game over avant 10 secondes.
-- Taux d’utilisation de la roulade.
-- Taux de redémarrage immédiat après game over.
+- Score moyen et P90 score.
+- Taux de game over < 10 secondes.
+- Taux d'usage de la roulade.
+- Taux d'utilisation des boutons mobile.
+- Taux de reprise après pause.

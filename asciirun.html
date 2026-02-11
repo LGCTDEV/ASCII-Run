@@ -10,10 +10,10 @@
   <main class="app-shell">
     <header class="hud" aria-live="polite">
       <h1>Stickman Runner Turbo</h1>
-      <p>ESPACE / ↑ / W sauter • ↓ / S roulade • P pause • R rejouer</p>
+      <p id="controls-help">ESPACE / ↑ / W : sauter • ↓ / S : roulade • P : pause • R : rejouer</p>
     </header>
 
-    <canvas id="game-canvas" width="960" height="400" role="img" aria-label="Jeu runner stickman"></canvas>
+    <canvas id="game-canvas" width="960" height="400" role="img" aria-label="Jeu runner stickman" aria-describedby="controls-help"></canvas>
 
     <section class="controls" aria-label="Contrôles de jeu">
       <button id="start-btn" class="btn btn-primary" type="button">Démarrer</button>
