@@ -176,6 +176,23 @@ export class RunnerGame {
     }
   }
 
+  handleSlide() {
+    if (this.status === 'ready') {
+      this.start();
+      return;
+    }
+
+    if (this.status !== 'running') {
+      return;
+    }
+
+    const didSlide = this.player.slide();
+    if (didSlide) {
+      this.spawnParticles(this.player.x + 12, this.player.y - 8, 8, '#d9c2ff');
+      this.queueScorePop('Roulade !', '#d9c2ff');
+    }
+  }
+
   handleJump() {
     if (this.status === 'ready') {
       this.start();
@@ -220,14 +237,15 @@ export class RunnerGame {
     const obstacleBack = obstacle.x + obstacle.width;
     const nearPlayer = Math.abs(obstacleBack - this.player.x) < 36;
     const lowJump = this.player.y < GAME_CONFIG.groundY - 18 && this.player.y > GAME_CONFIG.groundY - 75;
+    const evasiveSlide = obstacle.lane === 'air' && this.player.isSliding;
 
-    if (!nearPlayer || !lowJump || this.elapsedSeconds - this.lastNearMissAt < 0.45) {
+    if (!nearPlayer || (!lowJump && !evasiveSlide) || this.elapsedSeconds - this.lastNearMissAt < 0.45) {
       return;
     }
 
     this.lastNearMissAt = this.elapsedSeconds;
-    this.bonusScore += 8;
-    this.queueScorePop('Near miss +8', '#36d399');
+    this.bonusScore += evasiveSlide ? 10 : 8;
+    this.queueScorePop(evasiveSlide ? 'Esquive roulade +10' : 'Near miss +8', '#36d399');
   }
 
   handleCollision() {
@@ -256,6 +274,10 @@ export class RunnerGame {
 
     if (this.input.consumeJump()) {
       this.handleJump();
+    }
+
+    if (this.input.consumeSlide()) {
+      this.handleSlide();
     }
 
     if (this.status === 'ready') {

@@ -1,6 +1,7 @@
 export class InputController {
   constructor(canvas, controls = {}) {
     this.jumpQueued = false;
+    this.slideQueued = false;
     this.restartQueued = false;
     this.startQueued = false;
     this.pauseToggleQueued = false;
@@ -11,6 +12,11 @@ export class InputController {
         event.preventDefault();
         this.jumpQueued = true;
         this.startQueued = true;
+      }
+
+      if (['ArrowDown', 'KeyS'].includes(event.code)) {
+        event.preventDefault();
+        this.slideQueued = true;
       }
 
       if (event.code === 'KeyR') {
@@ -36,6 +42,10 @@ export class InputController {
       this.jumpQueued = true;
     });
 
+    controls.slideButton?.addEventListener('pointerdown', () => {
+      this.slideQueued = true;
+    });
+
     controls.pauseButton?.addEventListener('click', () => {
       this.pauseToggleQueued = true;
     });
@@ -48,6 +58,12 @@ export class InputController {
   consumeJump() {
     const next = this.jumpQueued;
     this.jumpQueued = false;
+    return next;
+  }
+
+  consumeSlide() {
+    const next = this.slideQueued;
+    this.slideQueued = false;
     return next;
   }
 

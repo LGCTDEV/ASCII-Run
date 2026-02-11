@@ -9,10 +9,18 @@ export class StickmanPlayer {
     this.velocityY = 0;
     this.isGrounded = true;
     this.runCycle = 0;
+    this.isSliding = false;
+    this.slideTimeLeft = 0;
+    this.slideCooldownLeft = 0;
+
+    this.standingHeight = 82;
+    this.slidingHeight = 46;
+    this.slideDuration = 0.62;
+    this.slideCooldown = 0.24;
   }
 
   jump() {
-    if (!this.isGrounded) {
+    if (!this.isGrounded || this.isSliding) {
       return false;
     }
 
@@ -21,8 +29,39 @@ export class StickmanPlayer {
     return true;
   }
 
+  slide() {
+    if (!this.isGrounded || this.isSliding || this.slideCooldownLeft > 0) {
+      return false;
+    }
+
+    this.isSliding = true;
+    this.slideTimeLeft = this.slideDuration;
+    this.height = this.slidingHeight;
+    return true;
+  }
+
+  endSlide() {
+    if (!this.isSliding) {
+      return;
+    }
+
+    this.isSliding = false;
+    this.slideTimeLeft = 0;
+    this.slideCooldownLeft = this.slideCooldown;
+    this.height = this.standingHeight;
+  }
+
   update(deltaTime) {
     this.runCycle += deltaTime * 0.014;
+
+    this.slideCooldownLeft = Math.max(0, this.slideCooldownLeft - deltaTime);
+
+    if (this.isSliding) {
+      this.slideTimeLeft -= deltaTime;
+      if (this.slideTimeLeft <= 0 || !this.isGrounded) {
+        this.endSlide();
+      }
+    }
 
     this.velocityY += GAME_CONFIG.gravity * deltaTime;
     this.y += this.velocityY * deltaTime;
