@@ -7,7 +7,9 @@ export const GAME_CONFIG = {
   baseSpeed: 330,
   maxSpeed: 760,
   levelStepSeconds: 14,
-  pointsPerSecond: 12
+  pointsPerSecond: 12,
+  minReactionSeconds: 0.9,
+  maxDeltaTime: 0.033
 };
 
 export const COLORS = {
@@ -17,5 +19,8 @@ export const COLORS = {
   text: '#132235',
   overlay: 'rgba(15, 17, 21, 0.55)',
   bonus: '#ffc857',
-  moon: '#fff5c3'
+  moon: '#fff5c3',
+  primary: '#ff8a00',
+  danger: '#ff5b6e',
+  info: '#8dd8ff'
 };

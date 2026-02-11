@@ -13,11 +13,12 @@ export class StickmanPlayer {
 
   jump() {
     if (!this.isGrounded) {
-      return;
+      return false;
     }
 
     this.velocityY = GAME_CONFIG.jumpVelocity;
     this.isGrounded = false;
+    return true;
   }
 
   update(deltaTime) {
@@ -26,11 +27,17 @@ export class StickmanPlayer {
     this.velocityY += GAME_CONFIG.gravity * deltaTime;
     this.y += this.velocityY * deltaTime;
 
+    const wasGrounded = this.isGrounded;
+
     if (this.y >= GAME_CONFIG.groundY) {
       this.y = GAME_CONFIG.groundY;
       this.velocityY = 0;
       this.isGrounded = true;
     }
+
+    return {
+      landed: !wasGrounded && this.isGrounded
+    };
   }
 
   getHitbox() {

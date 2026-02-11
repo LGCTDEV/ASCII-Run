@@ -10,14 +10,22 @@
   <main class="app-shell">
     <header class="hud" aria-live="polite">
       <h1>Stickman Runner</h1>
-      <p>ESPACE / ↑ / Clic pour sauter • R pour rejouer</p>
+      <p>ESPACE / ↑ / W pour sauter • P pause • R rejouer</p>
     </header>
 
     <canvas id="game-canvas" width="960" height="400" role="img" aria-label="Jeu runner stickman"></canvas>
 
+    <section class="controls" aria-label="Contrôles de jeu">
+      <button id="start-btn" class="btn btn-primary" type="button">Démarrer</button>
+      <button id="jump-btn" class="btn btn-primary" type="button">Sauter</button>
+      <button id="pause-btn" class="btn" type="button">Pause</button>
+      <button id="restart-btn" class="btn btn-danger" type="button">Rejouer</button>
+    </section>
+
     <section class="legend">
       <p><strong>Objectif :</strong> survivre le plus longtemps possible.</p>
       <p>Les obstacles accélèrent à chaque niveau.</p>
+      <p>Astuce : enchaîne les obstacles pour cumuler les bonus +5.</p>
     </section>
   </main>
 

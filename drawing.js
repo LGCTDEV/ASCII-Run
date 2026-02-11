@@ -91,16 +91,47 @@ function drawObstacles(ctx, obstacles) {
 }
 
 function drawHud(ctx, state) {
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.fillRect(12, 12, 280, 86);
+  ctx.fillStyle = 'rgba(255,255,255,0.72)';
+  ctx.fillRect(12, 12, 360, 106);
 
   ctx.fillStyle = COLORS.text;
-  ctx.font = '700 20px Inter, sans-serif';
-  ctx.fillText(`Score: ${state.score}`, 24, 40);
+  ctx.font = '700 24px Inter, sans-serif';
+  ctx.fillText(`Score: ${state.score}`, 24, 44);
 
   ctx.font = '600 18px Inter, sans-serif';
-  ctx.fillText(`Niveau: ${state.level}`, 24, 66);
-  ctx.fillText(`Meilleur: ${state.bestScore}`, 24, 90);
+  ctx.fillStyle = '#19324f';
+  ctx.fillText(`Niveau: ${state.level}`, 24, 72);
+  ctx.fillText(`Record score: ${state.bestScore}`, 24, 96);
+  ctx.fillText(`Record niveau: ${state.bestLevel}`, 180, 96);
+}
+
+function drawEffects(ctx, effects) {
+  effects.particles.forEach((particle) => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, particle.life);
+    ctx.fillStyle = particle.color;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  if (effects.scorePop) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, effects.scorePop.life * 1.4);
+    ctx.fillStyle = COLORS.bonus;
+    ctx.font = '700 24px Inter, sans-serif';
+    ctx.fillText(effects.scorePop.text, effects.scorePop.x, effects.scorePop.y);
+    ctx.restore();
+  }
+
+  if (effects.hitFlash > 0) {
+    ctx.save();
+    ctx.globalAlpha = effects.hitFlash * 0.5;
+    ctx.fillStyle = COLORS.danger;
+    ctx.fillRect(0, 0, GAME_CONFIG.width, GAME_CONFIG.height);
+    ctx.restore();
+  }
 }
 
 function drawOverlay(ctx, title, subtitle, hint) {
@@ -109,12 +140,13 @@ function drawOverlay(ctx, title, subtitle, hint) {
 
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.font = '800 48px Inter, sans-serif';
+  ctx.font = '800 46px Inter, sans-serif';
   ctx.fillText(title, GAME_CONFIG.width / 2, 150);
 
   ctx.font = '500 24px Inter, sans-serif';
   ctx.fillText(subtitle, GAME_CONFIG.width / 2, 195);
 
+  ctx.fillStyle = COLORS.info;
   ctx.font = '500 20px Inter, sans-serif';
   ctx.fillText(hint, GAME_CONFIG.width / 2, 235);
   ctx.textAlign = 'start';
@@ -129,27 +161,48 @@ export class Renderer {
     const { ctx } = this;
     ctx.clearRect(0, 0, GAME_CONFIG.width, GAME_CONFIG.height);
 
+    if (model.effects.shake > 0) {
+      const shakeX = (Math.random() - 0.5) * model.effects.shake;
+      const shakeY = (Math.random() - 0.5) * model.effects.shake;
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+    }
+
     drawSky(ctx, model.elapsedSeconds);
     drawGround(ctx, model.distance);
     drawObstacles(ctx, model.obstacles);
     drawStickman(ctx, model.player);
     drawHud(ctx, model);
+    drawEffects(ctx, model.effects);
+
+    if (model.effects.shake > 0) {
+      ctx.restore();
+    }
 
     if (model.status === 'ready') {
       drawOverlay(
         ctx,
         'Stickman Runner',
         'Évite les obstacles et garde le rythme.',
-        'Appuie sur ESPACE, ↑ ou clique pour commencer.'
+        'Clique sur Démarrer ou appuie sur ESPACE/↑.'
+      );
+    }
+
+    if (model.status === 'paused') {
+      drawOverlay(
+        ctx,
+        'Pause',
+        `Score: ${model.score} • Niveau: ${model.level}`,
+        'Appuie sur P ou Reprendre pour continuer.'
       );
     }
 
     if (model.status === 'gameover') {
       drawOverlay(
         ctx,
-        'Game Over',
+        'Partie terminée',
         `Score final: ${model.score} • Niveau: ${model.level}`,
-        'Appuie sur R pour relancer une partie.'
+        'Appuie sur R ou sur Rejouer.'
       );
     }
   }
